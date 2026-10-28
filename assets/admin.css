@@ -28,6 +28,22 @@
 
 .atsl .atsl-url.is-busy { opacity: .6; }
 
+.atsl .atsl-create-row {
+	display: flex;
+	gap: 8px;
+}
+
+.atsl .atsl-create-row .atsl-url {
+	flex: 1;
+	min-width: 0;
+}
+
+.atsl .button.atsl-create {
+	padding: 0 28px;
+	font-size: 16px;
+	line-height: 1;
+}
+
 .atsl .atsl-custom {
 	display: flex;
 	flex-wrap: wrap;
@@ -91,6 +107,8 @@
 	font-size: 14px;
 }
 
+.atsl .atsl-result { transition: opacity .4s ease; }
+.atsl .atsl-result.is-fading { opacity: 0; }
 .atsl .atsl-result[hidden] { display: none; }
 .atsl .atsl-result.is-ok { background: #edfaef; border: 1px solid #68de7c; }
 .atsl .atsl-result.is-ok .dashicons { color: #008a20; }

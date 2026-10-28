@@ -1,8 +1,9 @@
 /**
  * Arttime Short Links — dashboard.
  *
- * Paste a link → POST /links → the short link is copied and appears on top of
- * the table. Talks to /wp-json/atsl/v1 (see includes/class-atsl-rest.php).
+ * Paste a link, press "შექმნა" (or Enter) → POST /links → the short link is
+ * copied and appears on top of the table. Talks to /wp-json/atsl/v1 (see
+ * includes/class-atsl-rest.php).
  */
 ( () => {
 	'use strict';
@@ -15,6 +16,7 @@
 	const $ = ( id ) => document.getElementById( id );
 
 	const urlInput   = $( 'atsl-url' );
+	const createBtn  = $( 'atsl-create' );
 	const slugInput  = $( 'atsl-slug' );
 	const slugStatus = $( 'atsl-slug-status' );
 	const result     = $( 'atsl-result' );
@@ -136,7 +138,12 @@
 	// Create
 	// ---------------------------------------------------------------------
 
+	/** Success notice fades out on its own; errors stay until the next action. */
+	const RESULT_TTL = 6000;
+	let resultTimer;
+
 	function showStatus( kind, message ) {
+		clearTimeout( resultTimer );
 		result.hidden = false;
 		result.className = 'atsl-result is-' + kind;
 		result.replaceChildren(
@@ -146,6 +153,7 @@
 	}
 
 	function showCreated( link, message ) {
+		clearTimeout( resultTimer );
 		result.hidden = false;
 		result.className = 'atsl-result is-ok';
 		result.replaceChildren(
@@ -154,14 +162,25 @@
 			el( 'a', { href: link.short_url, target: '_blank', rel: 'noopener', class: 'atsl-result-link', text: link.short_display } ),
 			el( 'button', { type: 'button', class: 'button', on: { click: () => copyAndNotify( link.short_url ) } }, [ t.copy ] )
 		);
+		resultTimer = setTimeout( () => {
+			result.classList.add( 'is-fading' );
+			resultTimer = setTimeout( () => {
+				result.hidden = true;
+			}, 400 );
+		}, RESULT_TTL );
 	}
 
 	async function create() {
 		const url = urlInput.value.trim();
-		if ( ! url || state.busy ) {
+		if ( state.busy ) {
+			return;
+		}
+		if ( ! url ) {
+			urlInput.focus();
 			return;
 		}
 		state.busy = true;
+		createBtn.disabled = true;
 		urlInput.classList.add( 'is-busy' );
 		showStatus( 'busy', t.working );
 
@@ -177,20 +196,13 @@
 			showStatus( 'error', err.message );
 		} finally {
 			state.busy = false;
+			createBtn.disabled = false;
 			urlInput.classList.remove( 'is-busy' );
 			urlInput.focus();
 		}
 	}
 
-	urlInput.addEventListener( 'paste', ( e ) => {
-		const text = ( e.clipboardData || window.clipboardData ).getData( 'text' ).trim();
-		if ( ! text ) {
-			return;
-		}
-		e.preventDefault();
-		urlInput.value = text;
-		create();
-	} );
+	createBtn.addEventListener( 'click', create );
 
 	urlInput.addEventListener( 'keydown', ( e ) => {
 		if ( e.key === 'Enter' ) {
@@ -249,7 +261,7 @@
 	slugInput.addEventListener( 'keydown', ( e ) => {
 		if ( e.key === 'Enter' ) {
 			e.preventDefault();
-			urlInput.focus();
+			create();
 		}
 	} );
 
