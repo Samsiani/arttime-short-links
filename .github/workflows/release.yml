@@ -95,10 +95,9 @@ jobs:
 
       # ── Publish GitHub Release ─────────────────────────────────────────────
 
+      # Preinstalled gh CLI instead of a third-party action (no supply-chain pin to maintain).
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: "${{ steps.next.outputs.version }}"
-          name: "${{ steps.next.outputs.version }}"
-          generate_release_notes: true
-          files: ${{ env.ZIP }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.next.outputs.version }}
+        run: gh release create "$VERSION" "$ZIP" --title "$VERSION" --generate-notes
