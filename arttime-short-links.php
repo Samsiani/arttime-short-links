@@ -3,7 +3,7 @@
  * Plugin Name:       Arttime Short Links
  * Plugin URI:        https://github.com/Samsiani/arttime-short-links
  * Description:       Lightweight URL shortener: paste any link in the dashboard and get arttime.ge/k7m3p instantly, or choose your own ending (arttime.ge/my-url) when it is not already used on the site.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            Samsiani
  * Text Domain:       atsl
  * Domain Path:       /languages
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ATSL_VERSION', '1.0.0' );
+define( 'ATSL_VERSION', '1.0.1' );
 define( 'ATSL_FILE',    __FILE__ );
 define( 'ATSL_DIR',     plugin_dir_path( __FILE__ ) );
 define( 'ATSL_URL',     plugin_dir_url( __FILE__ ) );
