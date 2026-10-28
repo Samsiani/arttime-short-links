@@ -86,9 +86,12 @@ class ATSL_Admin {
 			<h1><?php esc_html_e( 'მოკლე ბმულები', 'atsl' ); ?></h1>
 
 			<div class="atsl-card">
-				<label class="atsl-label" for="atsl-url"><?php esc_html_e( 'ჩასვით ნებისმიერი ბმული — მოკლე ბმული მაშინვე შეიქმნება და დაკოპირდება', 'atsl' ); ?></label>
-				<input id="atsl-url" class="atsl-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" autofocus
-					placeholder="https://…">
+				<label class="atsl-label" for="atsl-url"><?php esc_html_e( 'ჩასვით ნებისმიერი ბმული და დააჭირეთ „შექმნა“-ს — მოკლე ბმული დაკოპირდება', 'atsl' ); ?></label>
+				<div class="atsl-create-row">
+					<input id="atsl-url" class="atsl-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" autofocus
+						placeholder="https://…">
+					<button id="atsl-create" type="button" class="button button-primary atsl-create"><?php esc_html_e( 'შექმნა', 'atsl' ); ?></button>
+				</div>
 
 				<div class="atsl-custom">
 					<label for="atsl-slug"><?php esc_html_e( 'საკუთარი ბოლოსართი (არასავალდებულო):', 'atsl' ); ?></label>
@@ -97,7 +100,7 @@ class ATSL_Admin {
 					</span>
 					<span id="atsl-slug-status" class="atsl-slug-status" aria-live="polite"></span>
 				</div>
-				<p class="atsl-hint"><?php esc_html_e( 'ბოლოსართი ჩაწერეთ ბმულის ჩასმამდე. ცარიელის შემთხვევაში შეიქმნება ავტომატური კოდი (მაგ. k7m3p).', 'atsl' ); ?></p>
+				<p class="atsl-hint"><?php esc_html_e( 'ბოლოსართის ცარიელად დატოვების შემთხვევაში შეიქმნება ავტომატური კოდი (მაგ. k7m3p).', 'atsl' ); ?></p>
 
 				<div id="atsl-result" class="atsl-result" aria-live="polite" hidden></div>
 			</div>
