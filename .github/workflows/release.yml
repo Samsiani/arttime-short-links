@@ -1,0 +1,104 @@
+name: Release on PR Merge
+
+# Fires every time a PR is merged into main.
+# Steps:
+#   1. Bump the patch segment of the version (1.0.0 → 1.0.1).
+#   2. Write the new version back to arttime-short-links.php (header + constant).
+#   3. Commit and push the bump on main  [skip ci].
+#   4. Tag the commit (1.0.1).
+#   5. Build a deployable .zip (vendor/ included, .git/.github excluded).
+#   6. Create a GitHub Release with the .zip attached.
+#      → Plugin Update Checker on live sites picks this up automatically.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # ── Read current version from plugin header ───────────────────────────
+
+      - name: Read current version
+        id: current
+        run: |
+          VERSION=$(awk '/^\s+\*\s+Version:/{print $NF; exit}' arttime-short-links.php)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Current version: ${VERSION}"
+
+      # ── Calculate next patch version ──────────────────────────────────────
+
+      - name: Bump patch version
+        id: next
+        run: |
+          IFS='.' read -r MAJOR MINOR PATCH <<< "${{ steps.current.outputs.version }}"
+          NEW="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          echo "version=${NEW}" >> "$GITHUB_OUTPUT"
+          echo "New version: ${NEW}"
+
+          # Update the plugin header comment.
+          sed -i -E "s/^( \* Version:[[:space:]]+).+$/\1${NEW}/" arttime-short-links.php
+
+          # Update the ATSL_VERSION constant.
+          sed -i -E "s/(define\( 'ATSL_VERSION', ')[^']+(' \);)/\1${NEW}\2/" arttime-short-links.php
+
+      # ── Commit version bump back to main ──────────────────────────────────
+
+      - name: Commit and push version bump
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add arttime-short-links.php
+          git commit -m "chore: bump version to ${{ steps.next.outputs.version }} [skip ci]"
+          git pull --rebase origin main
+          git push origin main
+
+      # ── Create and push the release tag ───────────────────────────────────
+
+      - name: Tag release
+        run: |
+          git tag "${{ steps.next.outputs.version }}"
+          git push origin "${{ steps.next.outputs.version }}"
+
+      # ── Build deployable plugin zip ───────────────────────────────────────
+      # The zip must contain a single top-level folder named "arttime-short-links"
+      # so WordPress can unpack it correctly. vendor/ is included; .git and
+      # .github are excluded so they don't bloat the download.
+
+      - name: Build plugin zip
+        run: |
+          SLUG="arttime-short-links"
+          mkdir -p /tmp/build/${SLUG}
+          rsync -r \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='*.sh' \
+            . /tmp/build/${SLUG}/
+          cd /tmp/build
+          zip -r ${SLUG}.zip ${SLUG}/
+          echo "ZIP=/tmp/build/${SLUG}.zip" >> "$GITHUB_ENV"
+
+      # ── Publish GitHub Release ─────────────────────────────────────────────
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "${{ steps.next.outputs.version }}"
+          name: "${{ steps.next.outputs.version }}"
+          generate_release_notes: true
+          files: ${{ env.ZIP }}
