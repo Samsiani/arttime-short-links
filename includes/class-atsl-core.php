@@ -3,7 +3,7 @@
  * ATSL_Core — Singleton bootstrap orchestrator.
  *
  * Responsibilities:
- *  - Activation: links table + capability for administrator / shop_manager
+ *  - Activation: links table + capability for administrator / shop_manager / editor
  *  - DB version check on admin_init
  *  - Loads the modules (slug rules, REST API, admin page) and the updater
  *
@@ -19,13 +19,14 @@ class ATSL_Core {
 
 	private static ?ATSL_Core $instance = null;
 
-	/** @var string Current DB schema version */
-	const DB_VERSION = '1';
+	/** @var string Current DB schema version (bumped to re-grant CAP when ROLES changes) */
+	const DB_VERSION = '2';
 
 	/** Capability that grants the dashboard and the REST API. */
 	const CAP = 'atsl_manage_links';
 
-	const ROLES = [ 'administrator', 'shop_manager' ];
+	/** Editor and every role above it. */
+	const ROLES = [ 'administrator', 'shop_manager', 'editor' ];
 
 	public static function instance(): self {
 		if ( null === self::$instance ) {
